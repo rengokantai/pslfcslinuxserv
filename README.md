@@ -8,6 +8,7 @@ yum install -y net-tools bash-completion vim-enhanced
 ```
 ps -fp 1   //show pid =1
 ```
+```
 systemctl status/mask/unmask sshd
 ```
 #####2
@@ -142,4 +143,34 @@ use ftp repo from server 2
 s2:
 ```
 cat /etc/resolv.conf
+```
+connect s2 to s1.  
+s2:
+```
+```
+
+
+#####install apache
+######50
+```
+yum install httpd httpd-manual
+systemctl start httpd.service
+pgrep httpd
+ps -fp $(pgrep httpd)
+yum install -y epel-release w3m
+w3m http://127.0.0.1
+aapchectl configtest
+cd /etc/httpd
+tree
+```
+config
+```
+vim /etc/httpd/conf/httpd.conf
+```
+edit
+```
+ServerName "server1.a.vm"
+```
+```
+vim /etc/httpd/conf.d/main.conf
 ```
