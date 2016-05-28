@@ -308,3 +308,89 @@ access:
 ```
 w3m moodle.a.vm
 ```
+######55 enabling ssl
+```
+yum install -y mod_ssl
+```
+```
+cd /etc/httpd/conf.d/ssl.conf
+```
+backup
+```
+cp /etc/httpd/conf.d/ssl.conf /etc/httpd/conf.d/ssl.template
+```
+gen ssh
+```
+openssl req -x509 -new -nodes -keyout moodle.key -out moodle.crt
+```
+set common name= moodle.a.vm,others blank
+```
+cd /etc/httpd/conf.d/
+chmod 400 moodle.key moodle.crt
+```
+then
+```
+vim moodle.conf
+```
+edit
+```
+<VirtualHost *:80>
+ServerName "moodle.a.vm"
+DocumentRoot "/var/www/moodle"
+<Directory "/var/www/moodle">
+Require valid-user
+AuthType Basic
+AuthName "Private Access"
+AuthBasicProvider file
+AuthUserFile "/etc/httpd/conf.d/moodle"
+</Directory>
+</VirtualHost>
+Listen 443  //delete this line to avoid error
+<VirtualHost *:443>
+ServerName "moodle.a.vm"
+DocumentRoot "/var/www/moodle"
+SSLEngine on
+SSLCertificateKeyFile "conf.d/moodle.key"   //added
+SSLCertificateFile "conf.d/moodle.crt"    //added
+<Directory "/var/www/moodle">
+Require valid-user
+AuthType Basic
+AuthName "Private Access"
+AuthBasicProvider file
+AuthUserFile "/etc/httpd/conf.d/moodle"
+</Directory>
+</VirtualHost>
+```
+then
+```
+apachectl configtest
+```
+######56 squid server
+```
+yum install -y squid
+```
+```
+vim /etc/squid/squid.conf
+```
+edit
+```
+acl localnet src 192.168.0.0/16 # RFC1918 possible internal network  //for this part only keep this line
+```
+start service
+```
+systemctl start squid.service
+```
+
+in s2:
+```
+export http_proxy=http://server1.a.vm:3128
+```
+connect to s1:
+```
+w3m server1.a.vm
+```
+
+in s1
+```
+tail -n1 /var/log/httpd/server1_access
+```
