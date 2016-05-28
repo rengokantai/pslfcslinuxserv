@@ -383,7 +383,7 @@ systemctl start squid.service
 
 in s2:
 ```
-export http_proxy=http://server1.a.vm:3128
+export http_proxy=http://server1.a.vm:3128    (test later)
 ```
 connect to s1:
 ```
@@ -473,4 +473,111 @@ sample php
 		echo $row["artist_id"] . " " . $row["artist_name"]."<br>";
 	}
 ?>
+```
+#####selinux
+######69 install samba
+```
+yum install -y samba*
+```
+```
+cd ~
+mkdir -m 1777 /share
+ls -ld /share
+cp /etc/hosts /share
+```
+then edit smb.conf
+```
+vim /etc/samba/smb.conf
+```
+edit,add
+```
+[share]
+path = /share
+writable = yes
+```
+verify
+```
+testparm
+```
+start server
+```
+systemctl start nmb smb
+systemctl enable nmb smb
+```
+add user
+```
+smbpasswd -a root
+```
+list client
+```
+smbclient -L //localhost
+```
+edit
+```
+smbclient //localhost/share Pass1  //quit toxexit
+```
+
+######70
+```
+getenforce
+```
+audit daemon
+```
+ausearch -m avc
+```
+```
+ls -dZ /share/
+```
+######whatprovides
+```
+yum whatprovides */sbin/semanage
+```
+install
+```
+yum install policycoreutils-python
+```
+change context
+```
+semanage fcontext -a -t samba_share_t '/share(/.*)?'
+restorecon -Rv /share
+```
+######boolean and samba
+
+```
+mkdir -m 1777 /accounts
+```
+then edit smb.conf
+```
+vim /etc/samba/smb.conf
+```
+add
+```
+[accts]
+path = /accounts
+writable = yes
+```
+then
+```
+setsebool -P samba_export_all_rw 1
+systemctl restart smb
+```
+copy hosts
+```
+cp /etc/hosts /accounts/
+smbclient //localhost/accts
+```
+######72 samba from selinux enforcement
+```
+yum install -y setools-console
+```
+seinfo
+```
+seinfo --permissive
+```
+add module
+```
+semanage permissive -a smbd_t
+```
+```
+seinfo --permissive
 ```
