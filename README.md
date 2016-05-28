@@ -171,6 +171,108 @@ edit
 ```
 ServerName "server1.a.vm"
 ```
+create a virtual host
 ```
 vim /etc/httpd/conf.d/main.conf
+```
+edit
+```
+<VirtualHost *:80>
+ServerName "server1.a.vm"
+DocumentRoot "/var/www/html"
+</VirtualHost>
+```
+test
+```
+!apa
+```
+create a new
+```
+cp main.conf moodle.conf
+```
+edit
+```
+<VirtualHost *:80>
+ServerName "moodle.a.vm"
+DocumentRoot "/var/www/moodle"
+</VirtualHost>
+```
+then create dir
+```
+mkdir /var/www/moodle
+```
+test,add content
+```
+echo "testke" >!$/index.html
+!sys
+```
+test,visit
+```
+w3m moodle.a.vm
+```
+if failed,then
+```
+echo "10.128.25.172 moodle.a.vm" >> /etc/hosts
+```
+######install apache config log files
+```
+pwd -P
+```
+```
+vim /etc/httpd/conf.d/main.conf
+```
+edit
+```
+<VirtualHost *:80>
+ServerName "server1.a.vm"
+
+DocumentRoot "/var/www/html"
+ErrorLog "logs/server1_error"
+CustomLog "logs/server1_access" common
+<Directory "/var/www/html">
+AllowOverride none
+
+</Directory>
+<Location /status>
+SetHandler server-status
+</Location>
+</VirtualHost>
+```
+then
+```
+cd /etc/httpd
+grep LogFormat conf/httpd.conf    //get log format
+```
+```
+w3m 127.0.0.1/manual
+```
+restrict access
+```
+vim /etc/httpd/conf.d/main.conf
+```
+edit
+```
+<VirtualHost *:80>
+ServerName "server1.a.vm"
+
+DocumentRoot "/var/www/html"
+ErrorLog "logs/server1_error"
+CustomLog "logs/server1_access" common
+<Directory "/var/www/html">
+AllowOverride none
+
+</Directory>
+<Location /status>
+SetHandler server-status
+Require ip 127.0.0.1 10.128.25.172  //other ip will be 403 error
+</Location>
+</VirtualHost>
+```
+restart
+```
+!sys
+```
+show error log
+```
+vim /etc/httpd/logs/server1_error
 ```
