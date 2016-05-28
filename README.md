@@ -276,3 +276,35 @@ show error log
 ```
 vim /etc/httpd/logs/server1_error
 ```
+######restrict access by username
+```
+vim /etc/httpd/conf.d/moodle.conf
+```
+edit
+```
+<VirtualHost *:80>
+ServerName "moodle.a.vm"
+DocumentRoot "/var/www/moodle"
+<Directory> "/var/www/moodle">
+Require valid-user
+AuthType Basic
+AuthName "Type your pass"
+AuthBasicProvider file
+AuthUserFile "/etc/httpd/conf.d/moodle"
+</Directory>
+</VirtualHost>
+```
+create user
+```
+!sys
+cd /etc/httpd/conf.d/
+htpasswd -c moodle root
+```
+add another user
+```
+htpasswd moodle user2
+```
+access:
+```
+w3m moodle.a.vm
+```
