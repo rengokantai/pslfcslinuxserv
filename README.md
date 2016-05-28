@@ -394,3 +394,83 @@ in s1
 ```
 tail -n1 /var/log/httpd/server1_access
 ```
+#####PHP 
+###### 60 php
+```
+tree /etc/httpd/conf.d
+yum install -y php
+```
+edit conf
+```
+vim /etc/httpd/conf.d/php.conf
+systemctl restart httpd
+```
+edit
+```
+upload_max_filesize
+post_max_size
+max_execution_time
+```
+show php config
+```
+php -i
+vim /etc/php.ini
+```
+edit
+```
+upload_max_filesize = 20M
+post_max_size = 24M  >=upload_max_size
+max_execution_time = 300
+```
+create file
+```
+cd /var/www/html
+vim info.php
+```
+edit
+```
+<?php phpinfo(); ?>
+echo $_SERVER['HTTP_USER_AGENT'];
+```
+######61 application
+```
+<h1>Convert Temperature</h1>
+<p>You will need to enter a temperature in Centigrade to be converted to Fahrenheit</p>
+<?php
+  if (isset($_GET['submit'])) {
+    $c = $_GET['centigrade'];
+    $f = (($c * 9)/5) + 32;
+    echo "<p>$c C is <b>$f F</b></p>";
+    }
+?>
+<form method="get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+<input type="text" name="centigrade"></input>
+<br>
+<input type="submit" value="Convert" name="submit"></input>
+</form>
+```
+#####MariaDB
+######63
+```
+yum install -y php-mysql mariadb mariadb-server
+systemctl enable mariadb
+systemctl start mariadb
+mysql_secure_installation  (remove anoy user,disallow remote login,y,y)
+```
+######66
+sample php
+```
+<?php
+	$user = 'user';
+	$password = 'Password1';
+	$host = 'localhost';
+	$db = 'albums';
+	$dbh = mysqli_connect($host,$user,$password,$db);
+	echo "Connected to $host <br><br>";
+	$query = "SELECT * FROM artists";
+	$result = mysqli_query($dbh,$query);
+	while ( $row = mysqli_fetch_array( $result,MYSQL_ASSOC ) ) {
+		echo $row["artist_id"] . " " . $row["artist_name"]."<br>";
+	}
+?>
+```
