@@ -150,6 +150,270 @@ s2:
 ```
 
 
+#####email
+######33 postfix mta
+install postfix (typically already installed)
+```
+yum install postfix
+```
+```
+alternatives --display mta
+```
+```
+systemctl status postfix.service 
+```
+smtp:port25. isntall mailx
+```
+yum install mailx -y
+```
+write mail
+```
+mail root
+```
+then
+```
+Subject: test
+content
+.
+EOT
+```
+check mail: /var/spool/mail/root
+```
+mail
+```
+press q enter to exit,if check log
+```
+tail /var/log/maillog
+```
+###### receiving SMTP
+s1
+```
+postconf -d -n(show k=v)
+```
+```
+postconf -n config_directory
+```
+```
+ls /etc/postfix
+```
+config
+```
+vim /etc/postfix/main.cf
+```
+copy
+```
+cp /etc/postfix/main.cf /etc/postfix/main.cf.$(date +%F)
+```
+```
+postconf -n inet_interfaces
+postconf -n inet_protocols
+```
+set
+```
+postconf -e inet_interfaces=all
+postconf -e inet_protocols=ipv4
+systemctl restart postfix.service
+```
+s2:
+```
+mail root@server1.a.vm
+```
+s1:
+```
+vim /var/named/db.example
+```
+edit, add some server
+```
+$TTL 3H
+$ORIGIN a.vm.
+a.vm.   IN SOA server1.a.vm.    root.a.vm. (
+                                        0       ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H )    ; minimum
+a.vm.   NS      server1.a.vm.
+server1 A       10.128.25.172
+server2 A       10.12.2.3
+server3 A       10.1.2.3
+a.vm.   MX      10   server1.a.vm.
+        AAAA    ::1
+```
+check
+```
+dig -t MX a.vm
+```
+ping test
+```
+ping server2
+```
+check mydestnation
+```
+postconf mydestnation
+```
+set
+```
+postconf 'mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain'
+```
+check myorigin
+```
+postconf myorigin
+```
+```
+postconf -e 'myorigin=$mydomain'
+```
+check
+```
+postfix check
+systemctl restart postfix.service
+```
+######38 config smtp relay
+s2:
+```
+cp /etc/postfix/main.cf /etc/postfix/main.cf.$(date +%F)
+postconf -e inet_interfaces=all
+postconf -e inet_protocols=ipv4
+postconf -e relayhost=server1.a.vm
+systemctl restart postfix.service
+```
+s3:
+```
+cp /etc/postfix/main.cf /etc/postfix/main.cf.$(date +%F)
+postconf -e inet_interfaces=all
+postconf -e inet_protocols=ipv4
+postconf -e relayhost=server1.a.vm
+systemctl restart postfix.service
+yum install -y mailx
+mail root@server2.a.vm
+```
+######39 dovecot
+s1
+```
+yum install -y dovecot
+```
+config
+```
+cd /etc/dovecot
+vim dovecot.conf
+```
+edit
+```
+protocols = imap pop3 lmtp
+listen = *
+```
+then
+```
+cd conf.d
+vim 10-auth.conf
+```
+edit
+```
+disable_plaintext_auth = no
+auth_mechanisms = plain login
+```
+```
+vim 10-mail.conf
+```
+edit
+```
+mail_location = mbox:~/mail:INBOX=/var/mail/%u
+mail_access_groups =mail
+```
+then
+```
+vim 10-master.conf
+```
+edit
+```
+unix_listener /var/spool/postfix/private/auth {
+	mode=0666
+	user=postfix
+	group=postfix
+}
+```
+then
+```
+vim 10-ssl.conf
+```
+edit
+```
+ssl=no
+```
+```
+systenctl start dovecot
+```
+######40 mutt
+```
+yum install -y mutt
+```
+create conf file
+```
+cd 
+vim .muttrc
+```
+edit
+```
+set spoolfile="imap://tux@server1.a.vm"
+```
+run
+```
+mutt
+```
+######41 config aliases
+```
+less /etc/aliases
+vim /etc/aliases
+```
+edit
+```
+webmaster:tux
+```
+run
+```
+newaliases
+```
+test
+```
+mail webmaster@a.vm
+```
+
+
+
+
+
+#####printing service port 631.
+#######44 cups
+```
+yum install -y cups
+systemctl start cups
+```
+config
+```
+vim /etc/cups/cupsd.conf
+```
+edit
+```
+DefaultEncryption Never
+Listen localhost:631
+Listen 10.128.25.172:631
+<Location />
+Order allow,deny
+allow localhost
+allow 10.128.25.0/24
+</Location>
+```
+then
+```
+systemctl restart cups
+```
+visit
+```
+10.128.25.172:631
+```
+######45
+(to be added)
+
+
 #####install apache
 ######50
 ```
