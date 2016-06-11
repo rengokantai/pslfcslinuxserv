@@ -140,21 +140,91 @@ answers = r.query('mylabserver.vm', 'NS')
 for rdata in answers:
     return rdata
 ```
-#####FTP
+##### cp4 Configuring FTP Servers
 ######13
 config DNS client on server 2  
 install vsftpd on server 1
 config vsftpd on server 1
 create ftp yum repo on server 1
 use ftp repo from server 2  
-s2:
+server2:
 ```
 cat /etc/resolv.conf
 ```
-connect s2 to s1.  
+then
+```
+vim /etc/sysconfig/network-scripts/ifcfg-lo   //in video it is ifcfg-enp0s3
+```
+connect s2 to s1.  (change hosts in s2)
 s2:
 ```
+ping rengokantai1
 ```
+######Installing the vsftpd Service
+s1
+```
+yum install -y vsftpd && systemctl start vsftpd
+```
+######Configuring FTP to Allow Only Anonymous Connections
+```
+vim /etc/vsftpd/vsftpd.conf
+```
+first delete all comment
+```
+:g/^#/d
+```
+then edit
+```
+anonymous_enable=YES
+local_enable=NO
+write_enable=NO
+local_umask=022
+dirmessage_enable=YES
+xferlog_enable=YES
+connect_from_port_20=YES
+xferlog_std_format=YES
+listen=YES
+listen_ipv6=NO
+pam_service_name=vsftpd
+userlist_enable=YES
+tcp_wrappers=YES
+anon_world_readable_only=YES
+```
+then restart
+```
+systemctl restart vsftpd
+```
+######Creating an FTP YUM Repository
+```
+(insert cd) mount /dev/sr0 /mnt
+mkdir /var/ftp/pub/centos72
+cd /mnt
+find . | cpio -pmd /var/ftp/ftp/pub/centos72
+eject /mnt
+df -h
+ls /var/ftp/pub/centos72
+```
+######use ftp repo
+```
+cd /etc/yum.repos.d && mv * /root/    //ok, do not need to do this
+```
+then
+```
+vim ftp.repo
+```
+edit
+```
+[ftpc7]
+name=FTP
+baseurl=ftp://rengokantai1.mylabserver.com/pub/centos72
+enabled=1
+gpgcheck=0
+```
+then
+```
+yum install -y bash-completion
+```
+
 
 
 #####email
