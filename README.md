@@ -9,9 +9,9 @@ yum install -y net-tools bash-completion vim-enhanced
 ps -fp 1   //show pid =1
 ```
 ```
-systemctl status/mask/unmask sshd
+systemctl mask sshd  //if masked, then cannot run it
 ```
-#####2
+#####2 Configuring a BIND DNS Service
 ######6
 ```
 yum install -y bind bind-utils
@@ -25,11 +25,16 @@ dig www.github.com @127.0.0.1
 ```
 vim /etc/named.conf
 ```
+check localip
+```
+ifconfig->172.31.127.255
+```
 edit
 ```
 options {
         listen-on port 53 { any; };
         listen-on-v6 port 53 { none; };
+        allow-query  { localhost;172.31.127.0/24; localnets;}
 ```
 then
 ```
@@ -44,6 +49,7 @@ add forwarding
         forward only;
 };
 ```
+######Locating Files and DNS Logs
 add print-severity
 ```
 logging {
@@ -55,6 +61,7 @@ logging {
 rerun (clear data)
 ```
 > /var/named/data/named.run
+systemctl start named
 ```
 check
 ```
@@ -69,9 +76,9 @@ ls /var/named
 ```
 ######9 conf a BIND DNS
 ```
-zone "a.vm."{
+zone "mylabserver.vm."{
         type master;
-        file "db.example";
+        file "db.mylabserver";
         allow-update { none; };
 };
 zone "." IN {
@@ -82,36 +89,36 @@ zone "." IN {
 ######10 creating a dns zone
 ```
 cd /var/named
-cp named.empty db.example
-chgrp named db.example
+cp named.empty db.mylabserver
+chgrp named db.mylabserver
 ```
 then
 ```
-vim db.example
+vim db.mylabserver
 ```
 edit
 ```
 $TTL 3H
-$ORIGIN a.vm.
-a.vm.   IN SOA server1.a.vm.    root.a.vm. (
-                                        0       ; serial
+$ORIGIN mylabserver.vm.
+mylabserver.vm.   IN SOA rengokantai1.mylabserver.vm.    root.mylabserver.vm. (
+                                        1       ; serial
                                         1D      ; refresh
                                         1H      ; retry
                                         1W      ; expire
                                         3H )    ; minimum
-a.vm.   NS      server1.a.vm.
-server1 A       10.128.25.172
-        AAAA    ::1
-
+mylabserver.vm.   NS      rengokantai1.mylabserver.vm.
+rengokantai1 A       172.31.113.13
 ```
 check
 ```
-named-checkzone a.vm db.example
+named-checkzone a.vm db.mylabserver
+systemctl restart named
 cat /var/named/data/named.run
 ```
 ######11 using dns tools
 ```
-dig server1.a.vm @127.0.0.1
+dig rengokantai1.mylabserver.vm @127.0.0.1
+dig -t NS mylabserver.vm @127.0.0.1
 ```
 ```
 yum install python-dns -y
@@ -129,9 +136,9 @@ import dns.resolver
 r = dns.resolver.Resolver()
 r.nameservers = ['127.0.0.1']
 
-answers = r.query('a.vm', 'NS')
+answers = r.query('mylabserver.vm', 'NS')
 for rdata in answers:
-    print rdata
+    return rdata
 ```
 #####FTP
 ######13
