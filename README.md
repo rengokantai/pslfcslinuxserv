@@ -537,11 +537,11 @@ edit
 ```
 DefaultEncryption Never
 Listen localhost:631
-Listen 10.128.25.172:631
+Listen 172.31.113.13:631
 <Location />
 Order allow,deny
 allow localhost
-allow 10.128.25.0/24
+allow 172.31.113.0/24
 </Location>
 ```
 then
@@ -780,7 +780,7 @@ vim /etc/squid/squid.conf
 ```
 edit
 ```
-acl localnet src 192.168.0.0/16 # RFC1918 possible internal network  //for this part only keep this line
+acl localnet src 192.168.0.0/16 # RFC1918 possible internal network  //for this part only keep this line,delete other 4 lines
 ```
 start service
 ```
@@ -789,7 +789,7 @@ systemctl start squid.service
 
 in s2:
 ```
-export http_proxy=http://server1.a.vm:3128    (test later)
+export http_proxy=http://rengokantai1.mylabserver.vm:3128    (test later)
 ```
 connect to s1:
 ```
