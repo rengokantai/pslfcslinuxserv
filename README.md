@@ -140,6 +140,10 @@ answers = r.query('mylabserver.vm', 'NS')
 for rdata in answers:
     return rdata
 ```
+run
+```
+python /usr/share/doc/python-dns-1.12.0/examples/our.py
+```
 ##### cp4 Configuring FTP Servers
 ######13
 config DNS client on server 2  
@@ -224,7 +228,66 @@ then
 ```
 yum install -y bash-completion
 ```
-
+#####Configuring DHCP
+######Configure a Static IP Address
+(need to disable dhcp in virtualbox) server1
+```
+vim /etc/systemfig/network-scripts/ifcfg-enpos8
+```
+edit
+```
+BOOTPROTO=none
+IPADDR='localpriip'
+NETMASK='255.255.255.0'
+NETWORK='192....0'
+DNS1='127.0.0.1'
+```
+```
+vim /etc/systemfig/network-scripts/ifcfg-enpos3
+```
+edit
+```
+PEERDNS=no
+```
+test
+```
+yum install NetworkManager -y
+```
+######Disable VirtualBox DHCP and Install ISC DHCP Server
+```
+yum install -y dhcp
+```
+######Configure an ISC DHCP Server
+```
+vim /etc/dhcp/dhcpd.conf
+```
+edit (failed restart this time)
+```
+option domain-name-servers 172.31.113.13;
+option domain-search "mylabserver.vm";
+default-lease-time 86400;
+max-lease-time 86400;
+ddns-update-style none;
+authorative;
+log-facility local4;
+subnet 172.31.127.0 netmask 255.255.255.0 {
+range 172.31.127.151 172.31.127.254;
+}
+host rengokantai2{
+hardware ethernet 0a:86:3b:99:f0:75;
+fixed-address 172.31.22.190;
+}
+```
+check
+```
+dhcpd -t -cf !$
+systemctl start dhcpd
+```
+######Testing DHCP and Dhclient
+server2
+```
+dhclient -r; dhclient 
+```
 
 
 #####email
