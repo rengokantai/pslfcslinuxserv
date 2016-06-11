@@ -292,9 +292,10 @@ dhclient -r; dhclient
 
 #####email
 ######33 postfix mta
+######Install and Verify Postfix MTA
 install postfix (typically already installed)
 ```
-yum install postfix
+yum install postfix -y
 ```
 ```
 alternatives --display mta
@@ -302,6 +303,7 @@ alternatives --display mta
 ```
 systemctl status postfix.service 
 ```
+######Working with the Out of the Box Configuration
 smtp:port25. isntall mailx
 ```
 yum install mailx -y
@@ -325,7 +327,7 @@ press q enter to exit,if check log
 ```
 tail /var/log/maillog
 ```
-###### receiving SMTP
+###### Receiving SMTP Message from Other Clients and Hosts
 s1
 ```
 postconf -d -n(show k=v)
@@ -356,7 +358,7 @@ systemctl restart postfix.service
 ```
 s2:
 ```
-mail root@server1.a.vm
+mail root@rengokantai.mylabserer.vm
 ```
 s1:
 ```
